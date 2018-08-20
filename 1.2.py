@@ -1,12 +1,18 @@
 import numpy as np
 
 
+class Lake:
+    def __init__(self, id, degree):
+        self.id = id
+        self.degree = degree
+
+
 def sort_arr(arr, start):
     temp = list()
     res = list()
     for i in range(start, len(arr)):
         temp.append(arr[i])
-    temp = sorted(temp, key=lambda x: x[1], reverse=True)
+    temp = sorted(temp, key=lambda x: x.degree, reverse=True)
     for i in range(0, start):
         res.append(arr[i])
     for x in temp:
@@ -14,42 +20,42 @@ def sort_arr(arr, start):
     return res
 
 
-def is_lake_exist():
-    sample_num = int(input('Please type in the number of sample:'))
-    while sample_num:
-        sample_num -= 1
-        lake_num = int(input('Please type in the number of lakes: '))
-        data = [int(x) for x in input('Please type in the degree of lake: ').split(' ')]
-        lake = list()
-        for i in range(0, lake_num):
-            lake.append([i, data[i]])
+def is_lake_exist(lake_num, degree):
+    lake_list = list()
+    for i in range(0, lake_num):
+        lake_list.append(Lake(i, degree[i]))
+    adjacency_matrix = np.zeros((lake_num, lake_num), dtype=int)
+    flag = 1
+    for i in range(0, lake_num):
+        lake_list = sort_arr(lake_list, i)
 
-        adjacency_matrix = np.zeros((lake_num, lake_num))
-        flag = 1
-        for i in range(0, lake_num):
-            lake = sort_arr(lake, i)
-            # 当前度数最大项的序号为 u, 度数为 d
-            u = lake[i][0]
-            d = lake[i][1]
-            # 最大度数超过剩下顶点数
-            if d > lake_num - i - 1:
+        u = lake_list[i].id
+        d = lake_list[i].degree
+
+        if d > lake_num - i - 1:
+            flag = 0
+            break
+
+        for k in range(1, d + 1):
+            v = lake_list[i + k].id
+            if lake_list[i + k].degree <= 0:
                 flag = 0
                 break
-            # 其后 d 的顶点的度数减一
-            for k in range(1, d + 1):
-                v = lake[i + k][0]
-                if lake[i + k][1] <= 0:
-                    flag = 0
-                    break
-                lake[i + k][1] -= 1
-                adjacency_matrix[u][v] = adjacency_matrix[v][u] = 1
+            lake_list[i + k].degree -= 1
+            adjacency_matrix[u][v] = adjacency_matrix[v][u] = 1
 
-        if flag:
-            print('Yes')
-            print(adjacency_matrix)
-        else:
-            print('No')
+    if flag:
+        print('Yes')
+        print(adjacency_matrix)
+    else:
+        print('No')
 
 
 if __name__ == "__main__":
-    is_lake_exist()
+    with open('1.2') as fp:
+        sample_num = int(fp.readline())
+        while sample_num > 0:
+            lake_num = int(fp.readline())
+            degree = [int(x) for x in fp.readline().split()]
+            is_lake_exist(lake_num, degree)
+            sample_num -= 1
